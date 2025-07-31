@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Matemático - ¡Practica tu Cálculo Mental!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .easy-btn {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+            color: white;
+        }
+
+        .medium-btn {
+            background: linear-gradient(45deg, #ed8936, #dd6b20);
+            color: white;
+        }
+
+        .hard-btn {
+            background: linear-gradient(45deg, #e53e3e, #c53030);
+            color: white;
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .sudoku-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .sudoku-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 2px;
+            background: #2d3748;
+            padding: 8px;
+            border-radius: 10px;
+            margin: 0 auto;
+            max-width: 450px;
+        }
+
+        .sudoku-cell {
+            width: 45px;
+            height: 45px;
+            border: none;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .sudoku-cell:focus {
+            outline: 3px solid #4299e1;
+            transform: scale(1.05);
+        }
+
+        .prefilled {
+            background: #e2e8f0;
+            color: #2d3748;
+            font-weight: bold;
+        }
+
+        .user-input {
+            background: white;
+            color: #4299e1;
+        }
+
+        .error {
+            background: #fed7d7 !important;
+            color: #e53e3e !important;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .correct {
+            background: #c6f6d5 !important;
+            color: #38a169 !important;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .message {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #e53e3e;
+            border: 2px solid #feb2b2;
+        }
+
+        .success-message {
+            background: #c6f6d5;
+            color: #38a169;
+            border: 2px solid #9ae6b4;
+        }
+
+        .new-game-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .new-game-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .grid-section {
+            border: 3px solid #2d3748;
+        }
+
+        .sudoku-cell:nth-child(3n):not(:nth-child(9n)) {
+            border-right: 3px solid #2d3748;
+        }
+
+        .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+        .sudoku-cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 3px solid #2d3748;
+        }
+
+        @media (max-width: 480px) {
+            .sudoku-cell {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+<style type="text/css">
+.grande { font-size: 60px; }
+</style>
+<script>
+// Escribir aqui el código Javascript
+</script>
+</head>
+<body>
+    <div class="container">
+        <h1>🧮 Sudoku Matemático 🧮</h1>
+        <p class="subtitle">¡Practica tu cálculo mental con este divertido rompecabezas!</p>
+        
+        <div class="difficulty-buttons">
+            <button class="difficulty-btn easy-btn" onclick="startGame('easy')">
+                🟢 Fácil
+            </button>
+            <button class="difficulty-btn medium-btn" onclick="startGame('medium')">
+                🟡 Medio
+            </button>
+            <button class="difficulty-btn hard-btn" onclick="startGame('hard')">
+                🔴 Difícil
+            </button>
+        </div>
+
+        <div id="message" class="message" style="display: none;"></div>
+
+        <div id="sudoku-container" class="sudoku-container">
+            <div id="sudoku-grid" class="sudoku-grid"></div>
+            <button id="new-game-btn" class="new-game-btn" onclick="showDifficultyButtons()" style="display: none;">
+                🎮 Nuevo Juego
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentPuzzle = [];
+        let solution = [];
+        let currentDifficulty = '';
+        let gameCompleted = false;
+
+        // Plantillas de Sudoku con diferentes dificultades
+        const puzzleTemplates = {
+            easy: [
+                {
+                    puzzle: [
+                        [5,3,0,0,7,0,0,0,0],
+                        [6,0,0,1,9,5,0,0,0],
+                        [0,9,8,0,0,0,0,6,0],
+                        [8,0,0,0,6,0,0,0,3],
+                        [4,0,0,8,0,3,0,0,1],
+                        [7,0,0,0,2,0,0,0,6],
+                        [0,6,0,0,0,0,2,8,0],
+                        [0,0,0,4,1,9,0,0,5],
+                        [0,0,0,0,8,0,0,7,9]
+                    ],
+                    solution: [
+                        [5,3,4,6,7,8,9,1,2],
+                        [6,7,2,1,9,5,3,4,8],
+                        [1,9,8,3,4,2,5,6,7],
+                        [8,5,9,7,6,1,4,2,3],
+                        [4,2,6,8,5,3,7,9,1],
+                        [7,1,3,9,2,4,8,5,6],
+                        [9,6,1,5,3,7,2,8,4],
+                        [2,8,7,4,1,9,6,3,5],
+                        [3,4,5,2,8,6,1,7,9]
+                    ]
+                },
+                {
+                    puzzle: [
+                        [0,0,0,6,0,0,4,0,0],
+                        [7,0,0,0,0,3,6,0,0],
+                        [0,0,0,0,9,1,0,8,0],
+                        [0,0,0,0,0,0,0,0,0],
+                        [0,5,0,1,8,0,0,0,3],
+                        [0,0,0,3,0,6,0,4,5],
+                        [0,4,0,2,0,0,0,6,0],
+                        [9,0,3,0,0,0,0,0,0],
+                        [0,2,0,0,0,0,1,0,0]
+                    ],
+                    solution: [
+                        [1,3,8,6,5,2,4,9,7],
+                        [7,9,2,8,4,3,6,1,5],
+                        [4,6,5,7,9,1,3,8,2],
+                        [3,1,4,9,2,8,7,5,6],
+                        [6,5,9,1,8,7,2,3,4],
+                        [2,8,7,3,1,6,9,4,5],
+                        [8,4,1,2,3,9,5,6,7],
+                        [9,7,3,5,6,4,8,2,1],
+                        [5,2,6,4,7,8,1,3,9]
+                    ]
+                }
+            ],
+            medium: [
+                {
+                    puzzle: [
+                        [0,2,0,6,0,8,0,0,0],
+                        [5,8,0,0,0,9,7,0,0],
+                        [0,0,0,0,4,0,0,0,0],
+                        [3,7,0,0,0,0,5,0,0],
+                        [6,0,0,0,0,0,0,0,4],
+                        [0,0,8,0,0,0,0,1,3],
+                        [0,0,0,0,2,0,0,0,0],
+                        [0,0,9,8,0,0,0,3,6],
+                        [0,0,0,3,0,6,0,9,0]
+                    ],
+                    solution: [
+                        [1,2,3,6,7,8,9,4,5],
+                        [5,8,4,2,3,9,7,6,1],
+                        [9,6,7,1,4,5,3,2,8],
+                        [3,7,2,4,6,1,5,8,9],
+                        [6,1,5,9,8,3,2,7,4],
+                        [4,9,8,5,2,7,6,1,3],
+                        [8,3,6,7,2,4,1,5,9],
+                        [2,4,9,8,1,5,4,3,6],
+                        [7,5,1,3,9,6,8,9,2]
+                    ]
+                },
+                {
+                    puzzle: [
+                        [0,0,0,0,0,0,6,8,0],
+                        [0,0,0,0,0,3,0,0,0],
+                        [7,0,0,0,9,0,5,0,0],
+                        [5,7,0,0,0,0,0,0,0],
+                        [0,0,0,0,8,5,0,0,0],
+                        [0,0,0,0,0,0,0,1,9],
+                        [0,0,4,0,0,0,0,0,2],
+                        [0,0,0,0,6,0,0,0,0],
+                        [0,3,2,0,0,0,0,0,0]
+                    ],
+                    solution: [
+                        [1,4,3,5,2,7,6,8,9],
+                        [2,6,8,1,4,3,7,9,5],
+                        [7,2,1,8,9,6,5,3,4],
+                        [5,7,9,3,1,2,8,4,6],
+                        [3,1,6,4,8,5,9,2,7],
+                        [4,8,2,6,7,9,3,1,5],
+                        [6,5,4,9,3,8,1,7,2],
+                        [8,9,7,2,6,1,4,5,3],
+                        [9,3,2,7,5,4,2,6,1]
+                    ]
+                }
+            ],
+            hard: [
+                {
+                    puzzle: [
+                        [0,0,0,0,0,0,0,0,0],
+                        [0,0,0,0,0,3,0,8,5],
+                        [0,0,1,0,2,0,0,0,0],
+                        [0,0,0,5,0,7,0,0,0],
+                        [0,0,4,0,0,0,1,0,0],
+                        [0,9,0,0,0,0,0,0,0],
+                        [5,0,0,0,0,0,0,7,3],
+                        [0,0,2,0,1,0,0,0,0],
+                        [0,0,0,0,4,0,0,0,9]
+                    ],
+                    solution: [
+                        [9,8,7,6,5,4,3,2,1],
+                        [2,4,6,1,7,3,9,8,5],
+                        [3,5,1,9,2,8,7,4,6],
+                        [1,2,8,5,3,7,6,9,4],
+                        [6,3,4,8,9,2,1,5,7],
+                        [7,9,5,4,6,1,8,3,2],
+                        [5,1,9,2,8,6,4,7,3],
+                        [4,7,2,3,1,9,5,6,8],
+                        [8,6,3,7,4,5,2,1,9]
+                    ]
+                },
+                {
+                    puzzle: [
+                        [0,0,0,0,0,6,0,0,0],
+                        [0,5,9,0,0,0,0,0,8],
+                        [2,0,0,0,0,8,0,0,0],
+                        [0,4,5,0,0,0,0,0,0],
+                        [0,0,3,0,0,0,0,0,0],
+                        [0,0,6,0,0,3,0,5,4],
+                        [0,0,0,3,2,5,0,0,6],
+                        [0,0,0,0,0,0,0,0,0],
+                        [0,0,0,0,0,0,0,0,0]
+                    ],
+                    solution: [
+                        [8,3,4,5,9,6,7,2,1],
+                        [6,5,9,1,7,2,3,4,8],
+                        [2,1,7,4,3,8,5,6,9],
+                        [1,4,5,2,6,9,8,3,7],
+                        [9,7,3,8,5,4,6,1,2],
+                        [7,2,6,9,1,3,2,5,4],
+                        [4,9,1,3,2,5,9,7,6],
+                        [3,6,8,7,4,1,1,9,5],
+                        [5,8,2,6,8,7,4,8,3]
+                    ]
+                }
+            ]
+        };
+
+        function startGame(difficulty) {
+            currentDifficulty = difficulty;
+            gameCompleted = false;
+            
+            // Seleccionar un puzzle aleatorio de la dificultad elegida
+            const templates = puzzleTemplates[difficulty];
+            const randomIndex = Math.floor(Math.random() * templates.length);
+            const selectedTemplate = templates[randomIndex];
+            
+            currentPuzzle = selectedTemplate.puzzle.map(row => [...row]);
+            solution = selectedTemplate.solution.map(row => [...row]);
+            
+            document.querySelector('.difficulty-buttons').style.display = 'none';
+            document.getElementById('sudoku-container').style.display = 'block';
+            document.getElementById('message').style.display = 'none';
+            
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('sudoku-grid');
+            grid.innerHTML = '';
+            
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    const cell = document.createElement('input');
+                    cell.type = 'text';
+                    cell.className = 'sudoku-cell';
+                    cell.maxLength = 1;
+                    
+                    if (currentPuzzle[row][col] !== 0) {
+                        cell.value = currentPuzzle[row][col];
+                        cell.className += ' prefilled';
+                        cell.readOnly = true;
+                    } else {
+                        cell.className += ' user-input';
+                        cell.addEventListener('input', (e) => handleInput(e, row, col));
+                        cell.addEventListener('keydown', handleKeyDown);
+                    }
+                    
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function handleInput(event, row, col) {
+            if (gameCompleted) return;
+            
+            const value = event.target.value;
+            const cell = event.target;
+            
+            // Solo permitir números del 1-9
+            if (!/^[1-9]$/.test(value)) {
+                event.target.value = '';
+                return;
+            }
+            
+            const num = parseInt(value);
+            
+            // Verificar si el número es válido en esa posición
+            if (isValidMove(row, col, num)) {
+                cell.className = 'sudoku-cell user-input correct';
+                currentPuzzle[row][col] = num;
+                hideMessage();
+                
+                // Verificar si el puzzle está completo
+                if (isPuzzleComplete()) {
+                    showMessage('¡Felicidades! 🎉 ¡Has completado el Sudoku correctamente! 🌟', 'success');
+                    gameCompleted = true;
+                    document.getElementById('new-game-btn').style.display = 'block';
+                }
+            } else {
+                cell.className = 'sudoku-cell user-input error';
+                showMessage('¡Ups! 😅 Ese número no puede ir ahí. ¡Inténtalo de nuevo!', 'error');
+                setTimeout(() => {
+                    cell.className = 'sudoku-cell user-input';
+                    hideMessage();
+                }, 2000);
+            }
+        }
+
+        function handleKeyDown(event) {
+            // Permitir teclas de navegación y borrado
+            const allowedKeys = ['Backspace', 'Delete', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'];
+            if (allowedKeys.includes(event.key)) {
+                if (event.key === 'Backspace' || event.key === 'Delete') {
+                    const row = Math.floor(Array.from(event.target.parentNode.children).indexOf(event.target) / 9);
+                    const col = Array.from(event.target.parentNode.children).indexOf(event.target) % 9;
+                    currentPuzzle[row][col] = 0;
+                    event.target.className = 'sudoku-cell user-input';
+                }
+                return;
+            }
+            
+            // Solo permitir números del 1-9
+            if (!/^[1-9]$/.test(event.key)) {
+                event.preventDefault();
+            }
+        }
+
+        function isValidMove(row, col, num) {
+            // Verificar fila
+            for (let c = 0; c < 9; c++) {
+                if (c !== col && currentPuzzle[row][c] === num) {
+                    return false;
+                }
+            }
+            
+            // Verificar columna
+            for (let r = 0; r < 9; r++) {
+                if (r !== row && currentPuzzle[r][col] === num) {
+                    return false;
+                }
+            }
+            
+            // Verificar cuadrado 3x3
+            const startRow = Math.floor(row / 3) * 3;
+            const startCol = Math.floor(col / 3) * 3;
+            
+            for (let r = startRow; r < startRow + 3; r++) {
+                for (let c = startCol; c < startCol + 3; c++) {
+                    if ((r !== row || c !== col) && currentPuzzle[r][c] === num) {
+                        return false;
+                    }
+                }
+            }
+            
+            return true;
+        }
+
+        function isPuzzleComplete() {
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    if (currentPuzzle[row][col] === 0) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.style.display = 'block';
+        }
+
+        function hideMessage() {
+            document.getElementById('message').style.display = 'none';
+        }
+
+        function showDifficultyButtons() {
+            document.querySelector('.difficulty-buttons').style.display = 'flex';
+            document.getElementById('sudoku-container').style.display = 'none';
+            document.getElementById('new-game-btn').style.display = 'none';
+            hideMessage();
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967416d51450f773',t:'MTc1Mzg3MDQ2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><iframe height="1" width="1" style="position: absolute; top: 0px; left: 0px; border: medium; visibility: hidden;"></iframe>
+
+
+</body></html>
